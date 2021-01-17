@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <!-- 记录Hive中的元数据信息  记录在mysql中 -->
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://192.168.78.1:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false&amp;serverTimezone=GMT</value>
+    </property>
+    <!-- mysql的驱动 -->
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>com.mysql.cj.jdbc.Driver</value>
+    </property>
+    <!-- mysql的用户名和密码，请自定义 -->
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>root</value>
+    </property>
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>123456</value>
+    </property>
+    <!-- 设置hive仓库的HDFS上的位置 -->
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>/hive/warehouse</value>
+    </property>
+    <!-- 添加元数据服务配置 -->
+    <property>
+        <name>hive.metastore.local</name>
+        <value>false</value>
+    </property>
+    <!-- 属性为空，则默认为本地模式，否则为远程模式 -->
+    <property>
+        <name>hive.metastore.uris</name>
+        <value>thrift://hadoop-master:9083</value>
+        <description>IP address (or fully-qualified domain name) and port of the metastore host</description>
+    </property>
+
+    <!--设置资源临时文件存放位置 -->
+    <property>
+        <name>hive.exec.scratchdir</name>
+        <value>/hive/tmp</value>
+    </property>
+    <!--设置查询日志在HDFS上的位置 -->
+    <property>
+        <name>hive.querylog.location</name>
+        <value>/hive/log</value>
+    </property>
+    <!-- 客户端远程连接的host -->
+    <property>
+        <name>hive.server2.thrift.bind.host</name>
+        <value>0.0.0.0</value>
+    </property>
+    <!-- 客户端远程连接的端口 -->
+    <property>
+        <name>hive.server2.thrift.port</name>
+        <value>10000</value>
+    </property>
+    <!-- hive远程服务的页面的host -->
+    <property>
+        <name>hive.server2.webui.host</name>
+        <value>0.0.0.0</value>
+    </property>
+    <!-- hive远程服务的页面的端口 -->
+    <property>
+        <name>hive.server2.webui.port</name>
+        <value>10002</value>
+    </property>
+    <!-- hive远程服务的连接超时设置 -->
+    <property>
+        <name>hive.server2.long.polling.timeout</name>
+        <value>5000</value>
+    </property>
+    <!-- hive远程服务模拟连接的用户，默认为true，HiveServer2以提交查询的用户身份执行查询处理；
+             为false,查询将以运行hiveserver2进程的用户身份运行,即yarn作业获取到的hiveserver2用户都为hive用户 -->
+    <property>
+        <name>hive.server2.enable.doAs</name>
+        <value>true</value>
+    </property>
+    <!-- 设置 权限 -->
+    <property>
+        <name>hive.scratch.dir.permission</name>
+        <value>777</value>
+    </property>
+    <!-- 在不存在时是否自动创建必要的schema（数据库和表） -->
+    <property>
+        <name>datanucleus.autoCreateSchema</name>
+        <value>false</value>
+    </property>
+    <!-- 开启数据核固定数据存储模式 -->
+    <property>
+        <name>datanucleus.fixedDatastore</name>
+        <value>true</value>
+    </property>
+    <!-- Hive计算引擎：mr=>mapreduce(默认);spark=>spark -->
+    <property>
+        <name>hive.execution.engine</name>
+        <value>spark</value>
+    </property>
+    <!-- 根据输入文件的大小决定是否将普通join转换为mapjoin的一种优化，默认不开启false -->
+    <property>
+        <name>hive.auto.convert.join</name>
+        <value>false</value>
+    </property>
+    <!-- 动态分配资源 -->
+    <property>
+        <name>spark.dynamicAllocation.enabled</name>
+        <value>true</value>
+    </property>
+    <!-- 使用Hive on spark时,若不设置下列该配置会出现内存溢出异常 -->
+    <property>
+        <name>spark.driver.extraJavaOptions</name>
+        <value>-XX:PermSize=128M -XX:MaxPermSize=512M</value>
+    </property>
+</configuration>
+
