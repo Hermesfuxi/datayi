@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.datayi.etl
+package bigdata.hermesfuxi.datayi.etl.dwd
 
 import java.util.Properties
 
@@ -25,7 +25,6 @@ object GeoHashDictGen {
     df.createTempView("df")
     val result = session.sql(
       """
-        | create table if not exit
         |select
         |  gps2GeoHash(BD09_LAT,BD09_LNG) as geohash,
         |  province,
@@ -33,8 +32,8 @@ object GeoHashDictGen {
         |  region
         |from df
         |""".stripMargin)
-//      .show()
-    result.write.parquet("hdfs://hadoop-master:9000/dicts/geodict/")
+    //      .show()
+    result.write.parquet("hdfs://hadoop-master:9000/datayi/dicts/geodict/")
     session.close()
   }
 

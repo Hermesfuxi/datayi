@@ -4,7 +4,9 @@
     <!-- 记录Hive中的元数据信息  记录在mysql中 -->
     <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:mysql://192.168.78.1:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false&amp;serverTimezone=GMT</value>
+        <value>
+            jdbc:mysql://192.168.78.1:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false&amp;serverTimezone=GMT
+        </value>
     </property>
     <!-- mysql的驱动 -->
     <property>
@@ -93,15 +95,21 @@
         <name>datanucleus.fixedDatastore</name>
         <value>true</value>
     </property>
+    <!-- 根据输入文件的大小决定是否将普通join转换为mapjoin的一种优化，默认不开启false -->
+    <property>
+        <name>hive.auto.convert.join</name>
+        <value>false</value>
+    </property>
+
+
     <!-- Hive计算引擎：mr=>mapreduce(默认);spark=>spark -->
     <property>
         <name>hive.execution.engine</name>
         <value>spark</value>
     </property>
-    <!-- 根据输入文件的大小决定是否将普通join转换为mapjoin的一种优化，默认不开启false -->
     <property>
-        <name>hive.auto.convert.join</name>
-        <value>false</value>
+        <name>hive.enable.spark.execution.engine</name>
+        <value>true</value>
     </property>
     <!-- 动态分配资源 -->
     <property>
@@ -112,6 +120,55 @@
     <property>
         <name>spark.driver.extraJavaOptions</name>
         <value>-XX:PermSize=128M -XX:MaxPermSize=512M</value>
+    </property>
+
+    <property>
+        <name>spark.home</name>
+        <value>/opt/spark</value>
+    </property>
+    <property>
+        <name>spark.master</name>
+        <value>yarn-cluster</value>
+    </property>
+    <property>
+        <name>hive.spark.client.channel.log.level</name>
+        <value>WARN</value>
+    </property>
+    <property>
+        <name>spark.eventLog.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>spark.eventLog.dir</name>
+        <value>/opt/hive/logs/sparkeventlog</value>
+    </property>
+    <property>
+        <name>spark.executor.memory</name>
+        <value>1g</value>
+    </property>
+    <property>
+        <name>spark.executor.cores</name>
+        <value>2</value>
+    </property>
+    <property>
+        <name>spark.executor.instances</name>
+        <value>6</value>
+    </property>
+    <property>
+        <name>spark.yarn.executor.memoryOverhead</name>
+        <value>150m</value>
+    </property>
+    <property>
+        <name>spark.driver.memory</name>
+        <value>4g</value>
+    </property>
+    <property>
+        <name>spark.yarn.driver.memoryOverhead</name>
+        <value>400m</value>
+    </property>
+    <property>
+        <name>spark.serializer</name>
+        <value>org.apache.spark.serializer.KryoSerializer</value>
     </property>
 </configuration>
 

@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.datayi.etl.beans
+package bigdata.hermesfuxi.datayi.beans
 
 import org.apache.spark.sql.Row
 
@@ -21,10 +21,10 @@ case class AppLogBean(
                        var resolution: String,
                        var sessionid: String,
                        var timestamp: Long,
-                       var newSessionId: String = "",
+                       var newsessionid: String = "",
                        var location: String = "",
                        var guid: String = "",
-                       var newFlag: Boolean = false,
+                       var newflag: Boolean = false,
                      )
 
 object AppLogBean {
@@ -49,7 +49,6 @@ object AppLogBean {
         row.getAs[String]("resolution"),
         row.getAs[String]("sessionid"),
         row.getAs[Long]("timestamp"),
-        row.getAs[String]("newSessionId"),
       )
     } catch {
       case e: Exception => {

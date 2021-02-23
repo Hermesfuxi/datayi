@@ -1,11 +1,17 @@
-package bigdata.hermesfuxi.datayi.etl
+package bigdata.hermesfuxi.datayi.etl.dws
 
+import bigdata.hermesfuxi.datayi.utils.ArgsUtil
 import org.apache.spark.sql.SparkSession
 
-object TfcAppAgrSessionTable {
+object AppFlowOverviewBitmapTable {
   def main(args: Array[String]): Unit = {
+    // 默认是 T 为 昨天, T-1 为 前天
+    val DT = ArgsUtil.initArgs(args)
+    val DT_CUR = DT._1
+
+
     val spark = SparkSession.builder()
-      .appName("ods层app端行为日志数据，处理为dwd明细表")
+      .appName(this.getClass.getSimpleName)
       .master("local[*]")
       .enableHiveSupport()
       .getOrCreate()
@@ -34,8 +40,8 @@ object TfcAppAgrSessionTable {
          |                collect_list(properties['pageId']) over (partition by newsessionid order by `timestamp`) as pageList,
          |                collect_set(from_unixtime(`timestamp` / 1000, 'yyyyMMddHH'))
          |                            over (partition by newsessionid order by `timestamp`)                        as hourNumSet
-         |         from dwd.event_app_log_to_dwd
-         |         where dt = '${args(0)}'
+         |         from dwd.event_app_detail
+         |         where dt = '${DT_CUR}'
          |     ) tmp
          |where rn = 1
          |""".stripMargin)
@@ -43,7 +49,7 @@ object TfcAppAgrSessionTable {
     result.createTempView("result")
     spark.sql(
       s"""
-         | insert into table dws.tfc_app_agr_session partition(dt='${args(0)}')
+         | insert into table dws.app_flow_agg_user partition(dt='${DT_CUR}')
          | select * from result
          |""".stripMargin)
 

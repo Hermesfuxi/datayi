@@ -1,5 +1,8 @@
 import org.lionsoul.ip2region.{DataBlock, DbConfig, DbSearcher}
 
+/**
+ * 测试 ip 地域映射
+ */
 object Ip2RegionTest {
   def main(args: Array[String]): Unit = {
 

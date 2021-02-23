@@ -1,9 +1,9 @@
-package bigdata.hermesfuxi.datayi.etl.utils
+package bigdata.hermesfuxi.datayi.utils
 
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 
-object DateUtils {
+object DateUtil {
   def getPlusFormatDate(day: Int, dateTimeStr: String, formatStr: String): String = {
     // "yyyy/MM/dd HH:mm:ss"
     val dtf = DateTimeFormatter.ofPattern(formatStr)

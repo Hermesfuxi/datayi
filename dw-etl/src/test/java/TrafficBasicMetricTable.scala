@@ -1,5 +1,3 @@
-package bigdata.hermesfuxi.datayi.etl
-
 import org.apache.spark.sql.SparkSession
 
 object TrafficBasicMetricTable {
@@ -9,7 +7,6 @@ object TrafficBasicMetricTable {
       .enableHiveSupport()
       .master("local[*]")
       .getOrCreate()
-
 
 
     spark.close()
