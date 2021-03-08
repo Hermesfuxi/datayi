@@ -3,7 +3,7 @@ package bigdata.hermesfuxi.datayi.etl.dws
 import bigdata.hermesfuxi.datayi.utils.ArgsUtil
 import org.apache.spark.sql.SparkSession
 
-object AppFlowOverviewBitmapCubeTable {
+object ShareEventOverviewBitmap {
   def main(args: Array[String]): Unit = {
     // 默认是 T 为 昨天, T-1 为 前天
     val DT = ArgsUtil.initArgs(args)

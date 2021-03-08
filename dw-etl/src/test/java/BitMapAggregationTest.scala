@@ -1,10 +1,11 @@
-import bigdata.hermesfuxi.datayi.functions.CombineUnique
+import bigdata.hermesfuxi.datayi.functions.{BitmapOrAggregation, BitmapOrAggregationFunction}
+import bigdata.hermesfuxi.datayi.utils.RoaringBitmapUtil
 import org.apache.spark.sql.SparkSession
 
-object CubeDistinctAggregation {
+object BitMapAggregationTest {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
-      .appName("ods层app端行为日志数据，处理为dwd明细表")
+      .appName(this.getClass.getSimpleName)
       .master("local[*]")
       .enableHiveSupport()
       .getOrCreate()
@@ -26,23 +27,22 @@ object CubeDistinctAggregation {
 
     val frame = data.map(s => {
       val arr = s.split(",")
-      (arr(0), arr(1), arr(2), arr(3))
+      (Integer.valueOf(arr(0)), arr(1), arr(2), arr(3))
     }).toDF("guid", "province", "city", "region")
 
     frame.createTempView("input")
+    spark.udf.register("to_bitmap", RoaringBitmapUtil.arrayToBitmap)
     val result1 = spark.sql(
       """
         |select
         |    province,
         |    city,
         |    region,
-        |    collect_set(guid) as guidList
+        |    to_bitmap(collect_set(guid)) as guid_bitmap
         |from input
         |group by province, city, region
         |
         |""".stripMargin)
-
-    result1.union(result1)
 
     result1.show()
     //    +--------+------+------+--------+
@@ -57,37 +57,14 @@ object CubeDistinctAggregation {
 
     result1.createTempView("result1")
 
-    //    val combineUnique = (arrayList: mutable.WrappedArray[mutable.WrappedArray[String]]) => {
-    //      val flattenArr = arrayList.flatten.distinct
-    //      flattenArr
-    //    }
-
-    //    val combineUnique = new Aggregator[Array[String], Array[String], Array[String]]() {
-    //      // 聚合的初始值：比如满足：任何 b + zero = b
-    //      override def zero: Array[String] = Array.empty[String]
-    //
-    //      // 分区内聚合:合并两个值。用新值直接更新buffer(初始值为zero)，并返回buffer本身，而不是重新new一个
-    //      override def reduce(buffer: Array[String], item: Array[String]): Array[String] = buffer.union(item).distinct
-    //
-    //      // 分区间聚合: 合并分区。依旧是用新值直接更新 buffer(初始值为zero)，并返回buffer本身，而不是重新new一个
-    //      override def merge(b1: Array[String], b2: Array[String]): Array[String] = reduce(b1, b2)
-    //
-    //      // 最终结果汇总
-    //      override def finish(reduction: Array[String]): Array[String] = reduction
-    //
-    //      // 定义内部缓存类型的编码器（前文提到的编码器，用于spark运算中的内部序列化和反序列化）
-    //      override def bufferEncoder: Encoder[Array[String]] = newStringArrayEncoder
-    //
-    //      override def outputEncoder: Encoder[Array[String]] = bufferEncoder
-    //    }
-
-    spark.udf.register("combine_unique", udaf(new CombineUnique(newStringArrayEncoder)));
-
+//    spark.udf.register("bitmap_or_agg", BitmapOrAggregationFunction)
+    spark.udf.register("bitmap_or_agg", udaf(BitmapOrAggregation))
+    spark.udf.register("bitmap_card", RoaringBitmapUtil.getCardNum _)
     spark.sql(
       """
         |select
         |    province,
-        |    combine_unique(guidList) as newGuidList
+        |    bitmap_card(bitmap_or_agg(guid_bitmap)) as guid_cn
         |from result1
         |group by province
         |

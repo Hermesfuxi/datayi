@@ -1,15 +1,19 @@
-import bigdata.hermesfuxi.datayi.utils.DateUtil
+package datatest
+
 import org.apache.spark.sql.SparkSession
 
-object AppGuidTable {
+/**
+ * 全局 guid 表 数据质量测试： 自增id == 行数
+ */
+object DWDUserGuidGlobal {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
-      .appName("ods层app端行为日志数据，处理为dwd明细表")
+      .appName(this.getClass.getSimpleName)
       .master("local[*]")
       .enableHiveSupport()
       .getOrCreate()
 
-    val DT_PRE = DateUtil.getPlusFormatDate(-1, args(0), "yyyy-MM-dd");
+    //    val DT_PRE = DateUtil.getPlusFormatDate(-1, args(0), "yyyy-MM-dd");
     spark.sql("select  max(id), count(distinct guid) from dwd.user_guid_global").show()
 
     //    val result = spark.sql(

@@ -4,7 +4,7 @@ import bigdata.hermesfuxi.datayi.utils.ArgsUtil
 import org.apache.spark.sql.SparkSession
 
 /**
- * 基于T-1日的"关联得分表" 和 T日的行为日志，得出T日的"关联得分表"
+ * 基于T-1日的"关联得分表" 和 T日的行为日志，得出T日的"关联得分表" dwd.device_account_relation
  */
 object DeviceAccountRelation {
 
@@ -46,24 +46,30 @@ object DeviceAccountRelation {
 
     cur_log_group.createTempView("cur_log_group")
 
+    /**
+     * —— 将上表与T-1日的关联评分表full join，分情况取值：
+     * 如果 “设备-账号”组合T-1有，T日有，则评分累加
+     * 如果 “设备-账号”组合T-1有，T日无，则评分衰减（衰减因子为 0.7 ）
+     * 如果 “设备-账号”组合T-1无，T日有，则新增记录
+     */
     val frame = session.sql(
       """
         |select
-        |       nvl(re.deviceid, log.deviceid) as deviceid,
-        |       nvl(re.account, log.account)   as account,
-        |       if(re.deviceid is not null and log.deviceid is null,
-        |           re.score * 0.7,
-        |           nvl(re.score, 0) + log.score
-        |        )                             as score,
-        |       nvl(re.first_time, log.min_time)   as first_time,
-        |       nvl(log.min_time, re.last_time)    as last_time
+        |       nvl(pre.deviceid, cur.deviceid)     as deviceid,
+        |       nvl(pre.account, cur.account)       as account,
+        |       if(pre.deviceid is not null and cur.deviceid is null,
+        |           pre.score * 0.7,
+        |           nvl(pre.score, 0) + cur.score
+        |        )                                  as score,
+        |       nvl(pre.first_time, cur.min_time)   as first_time,
+        |       nvl(cur.min_time, pre.last_time)    as last_time
         |
-        |from pre_relation re
-        |         full join cur_log_group log
-        |                   on re.deviceid = log.deviceid and re.account = log.account
+        |from pre_relation pre
+        |         full join cur_log_group cur
+        |                   on pre.deviceid = cur.deviceid and pre.account = cur.account
         |""".stripMargin)
 
-    // 从这个结果中，去掉那些已经有了关联账号的空设备
+    // 从这个结果中，去掉那些已经有了关联账号的空设备 （即 对一个设备而言，要么有多个账号，要么没账号 ）
     frame.where("account is null").createTempView("t_null")
     frame.where("account is not null").createTempView("t_not_null")
 
@@ -73,8 +79,8 @@ object DeviceAccountRelation {
         |       nvl(t_not_null.deviceid, t_null.deviceid)         as deviceid,
         |       t_not_null.account                                as account,
         |       nvl(t_not_null.score, 0)                          as score,
-        |    nvl(t_not_null.first_time,cast (concat(`unix_timestamp`(),'000') as bigint))  as first_time,
-        |    nvl(t_not_null.last_time,cast (concat(`unix_timestamp`(),'000') as bigint))   as last_time
+        |       nvl(t_not_null.first_time,cast (concat(`unix_timestamp`(),'000') as bigint))  as first_time,
+        |       nvl(t_not_null.last_time,cast (concat(`unix_timestamp`(),'000') as bigint))   as last_time
         |
         |from t_null
         |         full join t_not_null on t_null.deviceid = t_not_null.deviceid

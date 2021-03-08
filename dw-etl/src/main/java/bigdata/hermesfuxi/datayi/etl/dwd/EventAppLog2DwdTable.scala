@@ -1,9 +1,7 @@
 package bigdata.hermesfuxi.datayi.etl.dwd
 
-import java.io.InputStreamReader
-
 import bigdata.hermesfuxi.datayi.beans.AppLogBean
-import bigdata.hermesfuxi.datayi.utils.{ArgsUtil, HDFSUtil}
+import bigdata.hermesfuxi.datayi.utils.ArgsUtil
 import ch.hsr.geohash.GeoHash
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
@@ -11,6 +9,21 @@ import org.apache.hadoop.fs.{FSDataInputStream, FileStatus, FileSystem, Path}
 import org.apache.spark.sql.SparkSession
 import org.lionsoul.ip2region.{DbConfig, DbSearcher}
 
+/**
+ *  主要目标：清洗过滤、数据集成（地理位置信息）、guid标识、session分割、数据打平存贮（扁平表结构，parquet文件）
+ *  存贮表：
+ *    dwd.event_app_detail - 事件app端明细层表 、
+ *    dwd.user_guid_global - 全局guid记录表
+ *    dws.user_active_day - 日活用户记录表
+ *
+ *  铺垫工作：
+ *    	地理位置信息集成：存放到 hdfs://hadoop-master:9000/datayi/dicts 下
+ *    地理位置信息的知识库（字典）-- geohash，省，市，区   --用了工具：geohash
+ *    Ip地址地理位置信息字典 ，   -- (ipLong1,ipLong2)，省，市，区 --用了工具：ip2region
+ *
+ *    	设备账号关联评分字典: 用于推断游客的登录账号
+ *
+ */
 object EventAppLog2DwdTable {
   def main(args: Array[String]): Unit = {
     // 默认是 T 为 昨天, T-1 为 前天
@@ -114,6 +127,8 @@ object EventAppLog2DwdTable {
 
     /**
      * session分割，添加新的newsessionid字段
+     * 1、对分组后数据按照时间排序
+     * 2、然后判断i 和 i+1 两条事件的时间间隔：如果>30分钟，则生成新的sessionid，否则延续上一个
      */
     val tableColumns = "account,appid,appversion,carrier,deviceid,devicetype,eventid,ip,latitude,longitude,nettype,osname,osversion,properties,releasechannel,resolution,sessionid,`timestamp`"
 
@@ -121,7 +136,7 @@ object EventAppLog2DwdTable {
       s"""
          | select
          |   ${tableColumns},
-         |   concat_ws("_", sessionid, sum(time_diff) over (partition by sessionid order by `timestamp`)) newSessionId
+         |   concat_ws("_", sessionid, sum(time_diff) over (partition by sessionid order by `timestamp`)) as newsessionid
          | from (
          |   select
          |       ${tableColumns},
@@ -232,7 +247,7 @@ object EventAppLog2DwdTable {
          |""".stripMargin)
 
     /**
-     * 将 活跃GUID 插入 dws.每日活跃用户记录表
+     * 对当日出现的所有guid去重（group by）后， 插入 dws.user_active_day - 每日活跃用户记录表
      */
     spark.sql(
       s"""

@@ -52,6 +52,14 @@
             <version>${spark.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.swoop/spark-alchemy -->
+        <dependency>
+            <groupId>com.swoop</groupId>
+            <artifactId>spark-alchemy_${scala.compat.version}</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+
         <!-- https://mvnrepository.com/artifact/org.apache.hive.hcatalog/hive-hcatalog-core -->
         <dependency>
             <groupId>org.apache.hive.hcatalog</groupId>

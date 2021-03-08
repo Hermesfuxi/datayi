@@ -49,6 +49,7 @@ object AppLogBean {
         row.getAs[String]("resolution"),
         row.getAs[String]("sessionid"),
         row.getAs[Long]("timestamp"),
+        row.getAs[String]("newsessionid"),
       )
     } catch {
       case e: Exception => {
