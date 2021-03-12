@@ -10,14 +10,11 @@ object AppFlowOverviewBitmap {
     val DT = ArgsUtil.initArgs(args)
     val DT_CUR = DT._1
 
-
     val spark = SparkSession.builder()
       .appName(this.getClass.getSimpleName)
       .master("local[*]")
       .enableHiveSupport()
       .getOrCreate()
-
-    spark.udf.register("to_bitmap",arrayToBitmap)
 
     val tmp = spark.sql(
       s"""
@@ -44,6 +41,8 @@ object AppFlowOverviewBitmap {
 //    tmp.show()
     tmp.createTempView("tmp")
 
+    spark.udf.register("to_bitmap",arrayToBitmap)
+
     val result = spark.sql(
       s"""
          |SELECT location,
@@ -56,17 +55,14 @@ object AppFlowOverviewBitmap {
          |       sum(pv_cnt)                                           as pv_cnt,
          |
          |       to_bitmap(collect_set(id))                            as uv_bitmap,
-         |-- count(distinct guid) as uv_cnt,
          |
          |       sum(session_cnt)                                      as session_cnt,
          |       sum(time_long)                                        as time_long,
          |
          |       to_bitmap(collect_set(if(session_cnt > 1, id, null))) as return_user_bitmap,
-         |-- count(distinct if(session_cnt>1,guid,null)) as return_user_cnt,
          |
          |       sum(jumpout_cnt)                                      as jumpout_cnt,
          |       to_bitmap(collect_set(if(jumpout_cnt > 0, id, null))) as jumpout_user_bitmap
-         |--count(distinct if(jumpout_cnt>0,guid,null)) as jumpout_user_cnt
          |
          |FROM tmp
          |GROUP BY location,
@@ -78,13 +74,13 @@ object AppFlowOverviewBitmap {
          |         isnew
          |""".stripMargin)
 
-    result.show()
-//    result.createTempView("result")
-//    spark.sql(
-//      s"""
-//         | insert into table dws.app_flow_overview_bitmap partition(dt='${DT_CUR}')
-//         | select * from result
-//         |""".stripMargin)
+//    result.show()
+    result.createTempView("result")
+    spark.sql(
+      s"""
+         | insert overwrite table dws.app_flow_overview_bitmap partition(dt='${DT_CUR}')
+         | select * from result
+         |""".stripMargin)
 
     spark.close()
   }

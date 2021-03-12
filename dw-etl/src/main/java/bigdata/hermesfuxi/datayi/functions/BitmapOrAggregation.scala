@@ -12,8 +12,8 @@ object BitmapOrAggregation extends Aggregator[Array[Byte], Array[Byte], Array[By
   override def zero: Array[Byte] = RoaringBitmapUtil.serialize(new RoaringBitmap())
 
   override def reduce(b: Array[Byte], a: Array[Byte]): Array[Byte] = {
-    val bMap = RoaringBitmapUtil.deserialize(b)
     val aMap = RoaringBitmapUtil.deserialize(a)
+    val bMap = RoaringBitmapUtil.deserialize(b)
     bMap.or(aMap)
     RoaringBitmapUtil.serialize(bMap)
   }

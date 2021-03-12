@@ -7,7 +7,7 @@ object BitMapAggregationTest {
     val spark = SparkSession.builder()
       .appName(this.getClass.getSimpleName)
       .master("local[*]")
-      .enableHiveSupport()
+//      .enableHiveSupport()
       .getOrCreate()
 
     import org.apache.spark.sql.functions._

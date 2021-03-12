@@ -10,6 +10,15 @@ import scala.collection.mutable
  * 关于 BitMap聚合的实现
  */
 object RoaringBitmapUtil {
+
+  def main(args: Array[String]): Unit = {
+    val bitmap = RoaringBitmap.bitmapOf(1, 2, 3, 1000);
+
+    bitmap.addN(Array(7, 6), 0, 2)
+    val newBitMap = bitmap.limit(3)
+    println(newBitMap.toArray.toBuffer)
+  }
+
   /**
    * 序列化： 将 BitMap对象序列化为 Byte数据流
    * @param bitMap 对象
@@ -42,6 +51,11 @@ object RoaringBitmapUtil {
    */
   def getCardNum(array:Array[Byte]): Int = {
     val bitmap = deserialize(array)
+    bitmap.getCardinality
+  }
+
+  def getCardNumByInt(array: mutable.WrappedArray[Int]): Int = {
+    val bitmap = RoaringBitmap.bitmapOf(array: _*)
     bitmap.getCardinality
   }
 

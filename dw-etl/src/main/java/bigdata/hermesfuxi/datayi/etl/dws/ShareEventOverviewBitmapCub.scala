@@ -1,7 +1,9 @@
 package bigdata.hermesfuxi.datayi.etl.dws
 
-import bigdata.hermesfuxi.datayi.utils.ArgsUtil
+import bigdata.hermesfuxi.datayi.functions.BitmapOrAggregation
+import bigdata.hermesfuxi.datayi.utils.{ArgsUtil, RoaringBitmapUtil}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.udaf
 
 object ShareEventOverviewBitmapCub {
   def main(args: Array[String]): Unit = {
@@ -16,40 +18,38 @@ object ShareEventOverviewBitmapCub {
       .enableHiveSupport()
       .getOrCreate()
 
+    spark.udf.register("bitmap_or_agg", udaf(BitmapOrAggregation))
+    spark.udf.register("bitmap_card", RoaringBitmapUtil.getCardNum _)
+
     val result = spark.sql(
       s"""
-         |select guid,
-         |       newSessionId,
-         |       devicetype,
-         |       newFlag,
-         |       location,
-         |       startTime,
-         |       endTime,
-         |       hourNumSet,
-         |       pageList
-         |from (
-         |         select guid,
-         |                newSessionId,
-         |                newFlag,
-         |                location,
-         |                devicetype,
-         |                `timestamp`,
-         |                row_number() over (partition by newsessionid order by `timestamp` desc )                 as rn,
-         |                first_value(`timestamp`) over (partition by newsessionid order by `timestamp`)           as startTime,
-         |                last_value(`timestamp`) over (partition by newsessionid order by `timestamp`)            as endTime,
-         |                collect_list(properties['pageId']) over (partition by newsessionid order by `timestamp`) as pageList,
-         |                collect_set(from_unixtime(`timestamp` / 1000, 'yyyyMMddHH'))
-         |                            over (partition by newsessionid order by `timestamp`)                        as hourNumSet
-         |         from dwd.event_app_detail
-         |         where dt = '${DT_CUR}'
-         |     ) tmp
-         |where rn = 1
+         |select cat_name,
+         |       brand_name,
+         |       page_id,
+         |       lanmu_name,
+         |       share_method,
+         |       hour_range,
+         |       device_type,
+         |       bitmap_card(bitmap_or_agg(guid_bitmap)) as user_cnt,
+         |       sum(share_cnt)              as share_cnt
+         |
+         |from dws.share_event_overview_bitmap
+         |where dt = '${DT_CUR}'
+         |group by cat_name,
+         |         brand_name,
+         |         page_id,
+         |         lanmu_name,
+         |         share_method,
+         |         hour_range,
+         |         device_type
+         |with cube
          |""".stripMargin)
 
+//    result.show()
     result.createTempView("result")
     spark.sql(
       s"""
-         | insert into table dws.app_flow_agg_user partition(dt='${DT_CUR}')
+         | insert into table dws.share_event_overview_bitmap_cube partition(dt='${DT_CUR}')
          | select * from result
          |""".stripMargin)
 

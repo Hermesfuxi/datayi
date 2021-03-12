@@ -10,6 +10,7 @@ import org.apache.spark.sql.SparkSession
  */
 object GeoHashDictGen {
   def main(args: Array[String]): Unit = {
+
     val session = SparkSession.builder()
       .appName(this.getClass.getSimpleName)
       .master("local[*]")
