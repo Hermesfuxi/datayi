@@ -85,7 +85,8 @@ object UserActiveTimeRange {
     val result: Dataset[Row] = result1.unionAll(result2)
 
     // TODO numRows = 50 就运行卡死的问题
-    result.show(45)
+    result.write.json("table.json")
+//    result.show(50)
 //    result.createTempView("result")
 //    spark.sql(
 //      s"""

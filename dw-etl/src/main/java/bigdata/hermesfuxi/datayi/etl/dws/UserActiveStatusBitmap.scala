@@ -51,26 +51,38 @@ object UserActiveStatusBitmap {
     // 最高位31位始终是0（我们只取30天）,第30天需要变成0，故先做与运算（2^30-1=1073741823）
     val statusParam = (Math.pow(2, recordDays) -1).toLong
 
-    val result = spark.sql(
-      s"""
-         |with a as (select guid, first_dt, active_status from dws.user_active_status_bitmap where dt = '${DT_PRE}'),
-         |     b as (select guid, dt from dws.user_active_day where dt = '${DT_CUR}')
-         |
-         |select nvl(a.guid, b.guid)                                                   as guid,
-         |       if(a.guid is null and b.guid is not null, b.dt, a.first_dt)           as first_dt,
-         |       (${statusParam} & nvl(a.active_status, 0)) * 2 + if(b.guid is null, 0, 1) as active_status
-         |from a
-         |         full join b on a.guid = b.guid
-         |
-         |""".stripMargin)
+    spark.sql(
+      """
+        |with a as (select guid, first_dt, active_status from dws.user_active_status_bitmap where dt = '${DT_PRE}'),
+        |     b as (select guid, dt from dws.user_active_day where dt = '${DT_CUR}')
+        |
+        |select nvl(a.guid, b.guid)                                                   as guid,
+        |       if(a.guid is null and b.guid is not null, b.dt, a.first_dt)           as first_dt,
+        |       (${statusParam} & nvl(a.active_status, 0)) * 2 + if(b.guid is null, 0, 1) as active_status
+        |from a
+        |         full join b on a.guid = b.guid
+        |""".stripMargin).show()
+
+//    val result = spark.sql(
+//      s"""
+//         |with a as (select guid, first_dt, active_status from dws.user_active_status_bitmap where dt = '${DT_PRE}'),
+//         |     b as (select guid, dt from dws.user_active_day where dt = '${DT_CUR}')
+//         |
+//         |select nvl(a.guid, b.guid)                                                   as guid,
+//         |       if(a.guid is null and b.guid is not null, b.dt, a.first_dt)           as first_dt,
+//         |       (${statusParam} & nvl(a.active_status, 0)) * 2 + if(b.guid is null, 0, 1) as active_status
+//         |from a
+//         |         full join b on a.guid = b.guid
+//         |
+//         |""".stripMargin)
 
 //    result.show()
-    result.createTempView("result")
-    spark.sql(
-      s"""
-         | insert into table dws.user_active_status_bitmap partition(dt='${DT_CUR}')
-         | select * from result
-         |""".stripMargin)
+//    result.createTempView("result")
+//    spark.sql(
+//      s"""
+//         | insert into table dws.user_active_status_bitmap partition(dt='${DT_CUR}')
+//         | select * from result
+//         |""".stripMargin)
 
     spark.close()
   }

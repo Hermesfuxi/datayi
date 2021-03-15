@@ -1,9 +1,14 @@
+package attempt
+
 import org.apache.spark.sql.SparkSession
 
+/**
+ * 测试拉链表
+ */
 object TestZipTable {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
-      .appName("测试拉链表")
+      .appName(this.getClass.getSimpleName)
       .master("local[*]")
       .enableHiveSupport()
       .getOrCreate()

@@ -1,9 +1,10 @@
 package bigdata.hermesfuxi.datayi.functions
 
-import org.apache.spark.sql.Encoder
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.{Encoder}
 import org.apache.spark.sql.expressions.Aggregator
 
-class CombineUnique(encoder:Encoder[Array[String]]) extends Aggregator[Array[String], Array[String], Array[String]]{
+object UnionAggregation2 extends Aggregator[Array[String], Array[String], Array[String]]{
   // 聚合的初始值：比如满足：任何 b + zero = b
   override def zero: Array[String] = Array.empty[String]
 
@@ -18,8 +19,10 @@ class CombineUnique(encoder:Encoder[Array[String]]) extends Aggregator[Array[Str
   // 最终结果汇总
   override def finish(reduction: Array[String]): Array[String] = reduction
 
+  implicit def newStringArrayEncoder: Encoder[Array[String]] = ExpressionEncoder()
+
   // 定义内部缓存类型的编码器（前文提到的编码器，用于spark运算中的内部序列化和反序列化）
-  override def bufferEncoder: Encoder[Array[String]] = encoder
+  override def bufferEncoder: Encoder[Array[String]] = newStringArrayEncoder
 
   // 定义输出结果类型的编码器： 使用和 bufferEncoder一样的编码器
   override def outputEncoder: Encoder[Array[String]] = bufferEncoder

@@ -1,4 +1,6 @@
-import org.lionsoul.ip2region.{DataBlock, DbConfig, DbSearcher}
+package attempt
+
+import org.lionsoul.ip2region.{DbConfig, DbSearcher}
 
 /**
  * 测试 ip 地域映射

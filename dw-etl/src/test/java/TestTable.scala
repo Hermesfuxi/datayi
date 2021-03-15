@@ -3,7 +3,7 @@ import org.apache.spark.sql.SparkSession
 object TestTable {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
-      .appName("测试表")
+      .appName(this.getClass.getSimpleName)
       .master("local[*]")
       .enableHiveSupport()
       .getOrCreate()
@@ -105,6 +105,11 @@ object TestTable {
     //         | insert into table dwd.user_guid_global partition(dt='${args(0)}')
     //         | select * from result
     //         |""".stripMargin)
+
+    spark.sql(
+      """
+        |
+        |""".stripMargin)
 
     spark.close()
   }

@@ -4,7 +4,7 @@ import bigdata.hermesfuxi.datayi.utils.ArgsUtil
 import org.apache.spark.sql.SparkSession
 
 /**
- * 用户留存分析表计算中间表
+ * 用户留存分析表计算中间表： 从拉链表 dws.user_active_status_bitmap 中查询实现
  */
 object UserRetention2 {
   def main(args: Array[String]): Unit = {

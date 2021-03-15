@@ -1,4 +1,6 @@
-import bigdata.hermesfuxi.datayi.functions.{BitmapOrAggregation, BitmapOrAggregationFunction}
+package attempt.agg
+
+import bigdata.hermesfuxi.datayi.functions.BitmapOrAggregation
 import bigdata.hermesfuxi.datayi.utils.RoaringBitmapUtil
 import org.apache.spark.sql.SparkSession
 
@@ -7,7 +9,7 @@ object BitMapAggregationTest {
     val spark = SparkSession.builder()
       .appName(this.getClass.getSimpleName)
       .master("local[*]")
-//      .enableHiveSupport()
+      //      .enableHiveSupport()
       .getOrCreate()
 
     import org.apache.spark.sql.functions._
@@ -57,7 +59,7 @@ object BitMapAggregationTest {
 
     result1.createTempView("result1")
 
-//    spark.udf.register("bitmap_or_agg", BitmapOrAggregationFunction)
+    //    spark.udf.register("bitmap_or_agg", BitmapOrAggregationFunction)
     spark.udf.register("bitmap_or_agg", udaf(BitmapOrAggregation))
     spark.udf.register("bitmap_card", RoaringBitmapUtil.getCardNum _)
     spark.sql(
