@@ -9,7 +9,10 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
-.mvn/wrapper/maven-wrapper.jar
+.mvn/
+*.log
+*/*.log
+/metastore_db/
+/datayi.iml
+/derby.log
 
