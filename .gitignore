@@ -10,3 +10,5 @@ buildNumber.properties
 *.log
 */*.log
 /metastore_db/
+/datayi.iml
+/derby.log

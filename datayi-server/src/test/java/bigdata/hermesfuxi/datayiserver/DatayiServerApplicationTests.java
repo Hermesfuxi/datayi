@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.datayi.server;
+package bigdata.hermesfuxi.datayiserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
